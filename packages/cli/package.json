@@ -1,15 +1,15 @@
 {
-  "name": "@backstage/cli",
+  "name": "@zalando-backstage/cli",
   "description": "CLI for developing Backstage plugins and apps",
-  "version": "0.1.1-alpha.22",
+  "version": "0.1.1-alpha.22-test.2",
   "private": false,
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://backstage.io",
+  "homepage": "https://github.com/zalando-incubator/backstage/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/spotify/backstage",
+    "url": "https://github.com/zalando-incubator/backstage/",
     "directory": "packages/cli"
   },
   "keywords": [
@@ -28,9 +28,9 @@
     "backstage-cli": "bin/backstage-cli"
   },
   "dependencies": {
-    "@backstage/cli-common": "^0.1.1-alpha.22",
-    "@backstage/config": "^0.1.1-alpha.22",
-    "@backstage/config-loader": "^0.1.1-alpha.22",
+    "@zalando-backstage/cli-common": "0.1.1-alpha.22-test.2",
+    "@zalando-backstage/config": "0.1.1-alpha.22-test.2",
+    "@zalando-backstage/config-loader": "0.1.1-alpha.22-test.2",
     "@hot-loader/react-dom": "^16.13.0",
     "@lerna/package-graph": "^3.18.5",
     "@lerna/project": "^3.18.0",

@@ -35,7 +35,7 @@
       "plugins/*"
     ]
   },
-  "version": "1.0.0",
+  "version": "0.1.1-alpha.22-test.2",
   "devDependencies": {
     "@spotify/eslint-config-oss": "^1.0.1",
     "@spotify/prettier-config": "^8.0.0",
@@ -66,5 +66,9 @@
     "transformModules": [
       "@kyma-project/asyncapi-react"
     ]
+  },
+  "homepage": "https://github.com/zalando-incubator/backstage/",
+  "repository": {
+    "url": "https://github.com/zalando-incubator/backstage/"
   }
 }
