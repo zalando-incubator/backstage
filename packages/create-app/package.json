@@ -1,15 +1,15 @@
 {
-  "name": "@backstage/create-app",
+  "name": "@zalando-backstage/create-app",
   "description": "Create app package for Backstage",
-  "version": "0.1.1-alpha.22",
+  "version": "0.1.1-alpha.22-test.2",
   "private": false,
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://backstage.io",
+  "homepage": "https://github.com/zalando-incubator/backstage/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/spotify/backstage",
+    "url": "https://github.com/zalando-incubator/backstage/",
     "directory": "packages/create-app"
   },
   "keywords": [
@@ -27,7 +27,7 @@
     "start": "nodemon --"
   },
   "dependencies": {
-    "@backstage/cli-common": "^0.1.1-alpha.22",
+    "@zalando-backstage/cli-common": "0.1.1-alpha.22-test.2",
     "chalk": "^4.0.0",
     "commander": "^6.1.0",
     "fs-extra": "^9.0.0",
