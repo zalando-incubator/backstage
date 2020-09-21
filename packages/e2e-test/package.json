@@ -1,12 +1,12 @@
 {
   "name": "e2e-test",
   "description": "E2E test for verifying Backstage packages",
-  "version": "0.1.1-alpha.22",
+  "version": "0.1.1-alpha.22-test.1",
   "private": true,
-  "homepage": "https://backstage.io",
+  "homepage": "https://github.com/zalando-incubator/backstage/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/spotify/backstage",
+    "url": "https://github.com/zalando-incubator/backstage/",
     "directory": "packages/e2e-test"
   },
   "keywords": [
@@ -21,7 +21,7 @@
     "test:e2e": "yarn start"
   },
   "devDependencies": {
-    "@backstage/cli-common": "^0.1.1-alpha.22",
+    "@zalando-backstage/cli-common": "0.1.1-alpha.22-test.1",
     "@types/fs-extra": "^9.0.1",
     "@types/node": "^13.7.2",
     "fs-extra": "^9.0.0",

@@ -1,17 +1,17 @@
 {
-  "name": "@backstage/core",
+  "name": "@zalando-backstage/core",
   "description": "Core API used by Backstage plugins and apps",
-  "version": "0.1.1-alpha.22",
+  "version": "0.1.1-alpha.22-test.1",
   "private": false,
   "publishConfig": {
     "access": "public",
     "main": "dist/index.esm.js",
     "types": "dist/index.d.ts"
   },
-  "homepage": "https://backstage.io",
+  "homepage": "https://github.com/zalando-incubator/backstage/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/spotify/backstage",
+    "url": "https://github.com/zalando-incubator/backstage/",
     "directory": "packages/core"
   },
   "keywords": [
@@ -29,9 +29,9 @@
     "clean": "backstage-cli clean"
   },
   "dependencies": {
-    "@backstage/config": "^0.1.1-alpha.22",
-    "@backstage/core-api": "^0.1.1-alpha.22",
-    "@backstage/theme": "^0.1.1-alpha.22",
+    "@zalando-backstage/config": "0.1.1-alpha.22-test.1",
+    "@zalando-backstage/core-api": "0.1.1-alpha.22-test.1",
+    "@zalando-backstage/theme": "0.1.1-alpha.22-test.1",
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "4.0.0-alpha.45",
@@ -54,8 +54,8 @@
     "react-use": "^15.3.3"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.1.1-alpha.22",
-    "@backstage/test-utils": "^0.1.1-alpha.22",
+    "@zalando-backstage/cli": "0.1.1-alpha.22-test.1",
+    "@zalando-backstage/test-utils": "0.1.1-alpha.22-test.1",
     "@testing-library/jest-dom": "^5.10.1",
     "@testing-library/react": "^10.4.1",
     "@testing-library/user-event": "^12.0.7",

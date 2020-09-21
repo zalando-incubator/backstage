@@ -1,7 +1,7 @@
 {
-  "name": "@backstage/config-loader",
+  "name": "@zalando-backstage/config-loader",
   "description": "Config loading functionality used by Backstage backend, and CLI",
-  "version": "0.1.1-alpha.22",
+  "version": "0.1.1-alpha.22-test.1",
   "private": false,
   "publishConfig": {
     "access": "public",
@@ -9,10 +9,10 @@
     "module": "dist/index.esm.js",
     "types": "dist/index.d.ts"
   },
-  "homepage": "https://backstage.io",
+  "homepage": "https://github.com/zalando-incubator/backstage/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/spotify/backstage",
+    "url": "https://github.com/zalando-incubator/backstage/",
     "directory": "packages/config-loader"
   },
   "keywords": [
@@ -30,7 +30,7 @@
     "clean": "backstage-cli clean"
   },
   "dependencies": {
-    "@backstage/config": "^0.1.1-alpha.22",
+    "@zalando-backstage/config": "0.1.1-alpha.22-test.1",
     "fs-extra": "^9.0.0",
     "yaml": "^1.9.2",
     "yup": "^0.29.1"
