@@ -35,7 +35,7 @@
       "plugins/*"
     ]
   },
-  "version": "1.0.0",
+  "version": "0.1.1-alpha.22-test.3",
   "devDependencies": {
     "@changesets/cli": "2.10.2",
     "@spotify/eslint-config-oss": "^1.0.1",
@@ -74,12 +74,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zalando-incubator/backstage.git"
+    "url": "https://github.com/zalando-incubator/backstage/"
   },
   "author": "",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/zalando-incubator/backstage/issues"
   },
-  "homepage": "https://github.com/zalando-incubator/backstage#readme"
+  "homepage": "https://github.com/zalando-incubator/backstage/"
 }
