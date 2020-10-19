@@ -18,16 +18,15 @@ import {
   createServiceBuilder,
   loadBackendConfig,
   UrlReaders,
+  useHotMemoize,
 } from '@backstage/backend-common';
 import { ConfigReader } from '@backstage/config';
 import { Server } from 'http';
 import { Logger } from 'winston';
-import { HigherOrderOperations } from '..';
-import { DatabaseEntitiesCatalog } from '../catalog/DatabaseEntitiesCatalog';
-import { DatabaseLocationsCatalog } from '../catalog/DatabaseLocationsCatalog';
-import { DatabaseManager } from '../database/DatabaseManager';
+import { DatabaseManager } from '../database';
+import { CatalogBuilder } from './CatalogBuilder';
 import { createRouter } from './router';
-import { LocationReaders } from '../ingestion';
+import { KioReader } from '../ingestion/processors/KioProcessor';
 
 export interface ServerOptions {
   port: number;
@@ -35,24 +34,32 @@ export interface ServerOptions {
   logger: Logger;
 }
 
+
 export async function startStandaloneServer(
   options: ServerOptions,
 ): Promise<Server> {
   const logger = options.logger.child({ service: 'catalog-backend' });
   const config = ConfigReader.fromConfigs(await loadBackendConfig());
   const reader = UrlReaders.default({ logger, config });
+  const db = useHotMemoize(module, () =>
+    DatabaseManager.createInMemoryDatabaseConnection(),
+  );
 
   logger.debug('Creating application...');
-  const db = await DatabaseManager.createInMemoryDatabase({ logger });
-  const entitiesCatalog = new DatabaseEntitiesCatalog(db);
-  const locationsCatalog = new DatabaseLocationsCatalog(db);
-  const locationReader = new LocationReaders({ logger, config, reader });
-  const higherOrderOperation = new HigherOrderOperations(
+
+  const kioReader = new KioReader(process.env['TOKEN'] ?? 'abc', logger);
+  const builder = new CatalogBuilder({
+    logger,
+    database: { getClient: () => db },
+    config,
+    reader,
+  });
+  builder.addReaderProcessor(kioReader);
+  const {
     entitiesCatalog,
     locationsCatalog,
-    locationReader,
-    logger,
-  );
+    higherOrderOperation,
+  } = await builder.build();
 
   logger.debug('Starting application server...');
   const router = await createRouter({
