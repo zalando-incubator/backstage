@@ -1,0 +1,59 @@
+# example-backend
+
+## 0.2.0
+### Patch Changes
+
+- 440a17b3: Bump @backstage/catalog-backend and pass the now required UrlReader interface to the plugin
+- 6840a68d: Pass GitHub token into Scaffolder GitHub Preparer
+- Updated dependencies [28edd7d2]
+- Updated dependencies [819a7022]
+- Updated dependencies [3a423657]
+- Updated dependencies [3e254503]
+- Updated dependencies [6d29605d]
+- Updated dependencies [e0be86b6]
+- Updated dependencies [f70a5286]
+- Updated dependencies [12b5fe94]
+- Updated dependencies [5249594c]
+- Updated dependencies [56e4eb58]
+- Updated dependencies [b4e5466e]
+- Updated dependencies [6f1768c0]
+- Updated dependencies [e37c0a00]
+- Updated dependencies [3472c8be]
+- Updated dependencies [57d555eb]
+- Updated dependencies [61db1ddc]
+- Updated dependencies [81cb9437]
+- Updated dependencies [1687b8fb]
+- Updated dependencies [a768a07f]
+- Updated dependencies [a768a07f]
+- Updated dependencies [f00ca3cb]
+- Updated dependencies [0c370c97]
+- Updated dependencies [ce1f5539]
+- Updated dependencies [e6b00e3a]
+- Updated dependencies [9226c2aa]
+- Updated dependencies [99710b10]
+- Updated dependencies [65d72245]
+- Updated dependencies [4036ff59]
+- Updated dependencies [512d7097]
+- Updated dependencies [c926765a]
+- Updated dependencies [5a920c6e]
+- Updated dependencies [440a17b3]
+- Updated dependencies [8afce088]
+- Updated dependencies [6840a68d]
+- Updated dependencies [a5cb46ba]
+- Updated dependencies [49d70cca]
+- Updated dependencies [1c8c4375]
+- Updated dependencies [e142a276]
+- Updated dependencies [440a17b3]
+  - @backstage/plugin-app-backend@0.2.0
+  - @backstage/plugin-auth-backend@0.2.0
+  - @backstage/catalog-model@0.2.0
+  - @backstage/plugin-scaffolder-backend@0.2.0
+  - @backstage/plugin-techdocs-backend@0.2.0
+  - @backstage/plugin-catalog-backend@0.2.0
+  - @backstage/plugin-proxy-backend@0.2.0
+  - @backstage/backend-common@0.2.0
+  - example-app@0.2.0
+  - @backstage/plugin-graphql-backend@0.1.1
+  - @backstage/plugin-kubernetes-backend@0.1.1
+  - @backstage/plugin-rollbar-backend@0.1.1
+  - @backstage/plugin-sentry-backend@0.1.1
