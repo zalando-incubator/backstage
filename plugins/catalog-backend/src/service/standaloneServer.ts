@@ -47,7 +47,8 @@ export async function startStandaloneServer(
 
   logger.debug('Creating application...');
 
-  const kioReader = new KioReader(process.env['TOKEN'] ?? 'abc', logger);
+  logger.info(config.getString('backend.devToken'));
+  const kioReader = new KioReader(config.getOptionalString('backend.devToken') ?? 'abc', logger);
   const builder = new CatalogBuilder({
     logger,
     database: { getClient: () => db },

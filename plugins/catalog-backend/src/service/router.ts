@@ -37,6 +37,7 @@ export async function createRouter(
 ): Promise<express.Router> {
   const { entitiesCatalog, locationsCatalog, higherOrderOperation } = options;
 
+  console.log(alphaomeagadeta);
   const router = Router();
   router.use(express.json());
 

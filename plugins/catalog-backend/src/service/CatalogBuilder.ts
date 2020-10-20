@@ -396,7 +396,7 @@ export class CatalogBuilder {
           new FieldFormatEntityPolicy(
             makeValidator(this.fieldFormatValidators),
           ),
-          new ReservedFieldsEntityPolicy(),
+          //new ReservedFieldsEntityPolicy(),
           ...this.entityPolicies,
         ];
 
