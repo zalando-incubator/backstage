@@ -414,7 +414,7 @@ export class CatalogBuilder {
 
     return EntityPolicies.allOf([
       EntityPolicies.allOf(entityPolicies),
-      EntityPolicies.oneOf(entityKinds),
+      EntityPolicies.anyOf(entityKinds),
     ]);
   }
 

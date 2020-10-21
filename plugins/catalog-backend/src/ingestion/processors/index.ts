@@ -35,3 +35,4 @@ export { PlaceholderProcessor } from './PlaceholderProcessor';
 export { StaticLocationProcessor } from './StaticLocationProcessor';
 export { UrlReaderProcessor } from './UrlReaderProcessor';
 export { YamlProcessor } from './YamlProcessor';
+export { KioReader } from './KioProcessor';
