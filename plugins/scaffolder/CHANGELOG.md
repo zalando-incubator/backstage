@@ -1,5 +1,43 @@
 # @backstage/plugin-scaffolder
 
+## 0.3.5
+
+### Patch Changes
+
+- 19554f6d6: Added Github Actions for Create React App, and allow better imports of files inside a module when they're exposed using `files` in `package.json`
+- Updated dependencies [1dc445e89]
+- Updated dependencies [342270e4d]
+  - @backstage/core@0.4.2
+  - @backstage/plugin-catalog@0.2.8
+
+## 0.3.4
+
+### Patch Changes
+
+- Updated dependencies [c911061b7]
+- Updated dependencies [8ef71ed32]
+- Updated dependencies [0e6298f7e]
+- Updated dependencies [ac3560b42]
+  - @backstage/catalog-model@0.6.0
+  - @backstage/core@0.4.1
+  - @backstage/plugin-catalog@0.2.7
+
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [2527628e1]
+- Updated dependencies [6011b7d3e]
+- Updated dependencies [1c69d4716]
+- Updated dependencies [83b6e0c1f]
+- Updated dependencies [1665ae8bb]
+- Updated dependencies [04f26f88d]
+- Updated dependencies [ff243ce96]
+  - @backstage/core@0.4.0
+  - @backstage/plugin-catalog@0.2.6
+  - @backstage/catalog-model@0.5.0
+  - @backstage/theme@0.2.2
+
 ## 0.3.2
 
 ### Patch Changes
@@ -99,7 +137,7 @@
   ![failed-to-create-component](https://user-images.githubusercontent.com/33940798/94339296-90969400-0016-11eb-9a74-ce16b3dd8d88.gif)
 
 - c5ef12926: fix the accordion details design when job stage fail
-- 1c8c43756: The new `scaffolder.github.baseUrl` config property allows to specify a custom base url for GitHub enterprise instances
+- 1c8c43756: The new `scaffolder.github.baseUrl` config property allows to specify a custom base url for GitHub Enterprise instances
 - Updated dependencies [28edd7d29]
 - Updated dependencies [819a70229]
 - Updated dependencies [3a4236570]

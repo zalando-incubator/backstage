@@ -1,5 +1,40 @@
 # @backstage/plugin-scaffolder-backend
 
+## 0.3.6
+
+### Patch Changes
+
+- 19554f6d6: Added Github Actions for Create React App, and allow better imports of files inside a module when they're exposed using `files` in `package.json`
+- 33a82a713: GitLab preparer uses the right token (primarily the same one as the publisher, falling back to the integrations token)
+- aed8f7f12: Clearer error message when preparer or publisher type can't be determined.
+
+## 0.3.5
+
+### Patch Changes
+
+- 94c65a9d4: Added configuration schema for the commonly used properties
+- Updated dependencies [c911061b7]
+- Updated dependencies [1d1c2860f]
+- Updated dependencies [0e6298f7e]
+- Updated dependencies [4eafdec4a]
+- Updated dependencies [ac3560b42]
+  - @backstage/catalog-model@0.6.0
+  - @backstage/backend-common@0.4.1
+
+## 0.3.4
+
+### Patch Changes
+
+- 1e22f8e0b: Unify `dockerode` library and type dependency versions
+- Updated dependencies [38e24db00]
+- Updated dependencies [e3bd9fc2f]
+- Updated dependencies [12bbd748c]
+- Updated dependencies [83b6e0c1f]
+- Updated dependencies [e3bd9fc2f]
+  - @backstage/backend-common@0.4.0
+  - @backstage/config@0.1.2
+  - @backstage/catalog-model@0.5.0
+
 ## 0.3.3
 
 ### Patch Changes
@@ -72,7 +107,7 @@
 - 991a950e0: Added .fromConfig static factories for Preparers and Publishers + read integrations config to support url location types
 - c926765a2: Allow templates to be located on non-default branch
 - 6840a68df: Add authentication token to Scaffolder GitHub Preparer
-- 1c8c43756: The new `scaffolder.github.baseUrl` config property allows to specify a custom base url for GitHub enterprise instances
+- 1c8c43756: The new `scaffolder.github.baseUrl` config property allows to specify a custom base url for GitHub Enterprise instances
 - 5e4551e3a: Added support for configuring the working directory of the Scaffolder:
 
   ```yaml

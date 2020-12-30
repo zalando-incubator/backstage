@@ -407,7 +407,7 @@ The current set of well-known and common values for this field is:
 
 - `service` - a backend service, typically exposing an API
 - `website` - a website
-- `library` - a software library, such as an NPM module or a Java library
+- `library` - a software library, such as an npm module or a Java library
 
 ### `spec.lifecycle` [required]
 
@@ -443,21 +443,6 @@ component, but there will always be one ultimate owner.
 Apart from being a string, the software catalog leaves the format of this field
 open to implementers to choose. Most commonly, it is set to the ID or email of a
 group of people in an organizational structure.
-
-### `spec.implementsApis` [optional]
-
-**NOTE**: This field was marked for deprecation on Nov 25nd, 2020. It will be
-removed entirely from the model on Dec 14th, 2020 in the repository and will not
-be present in released packages following the next release after that. Please
-update your code to not consume this field before the removal date.
-
-Links APIs that are implemented by the component, e.g. `artist-api`. This field
-is optional.
-
-The software catalog expects a list of one or more strings that references the
-names of other entities of the `kind` `API`.
-
-This field has the same behavior as `spec.providesApis`.
 
 ### `spec.providesApis` [optional]
 
@@ -558,7 +543,7 @@ The current set of well-known and common values for this field is:
 
 - `service` - a backend service, typically exposing an API
 - `website` - a website
-- `library` - a software library, such as an NPM module or a Java library
+- `library` - a software library, such as an npm module or a Java library
 
 ### `spec.templater` [required]
 
@@ -723,6 +708,10 @@ metadata:
   description: The infra business unit
 spec:
   type: business-unit
+  profile:
+    displayName: Infrastructure
+    email: infrastructure@example.com
+    picture: https://example.com/groups/bu-infrastructure.jpeg
   parent: ops
   children: [backstage, other]
 ```
@@ -746,6 +735,14 @@ Some common values for this field could be:
 - `business-unit`
 - `product-area`
 - `root` - as a common virtual root of the hierarchy, if desired
+
+### `spec.profile` [optional]
+
+Optional profile information about the group, mainly for display purposes. All
+fields of this structure are also optional. The email would be a group email of
+some form, that the group may wish to be used for contacting them. The picture
+is expected to be a URL pointing to an image that's representative of the group,
+and that a browser could fetch and render on a group page or similar.
 
 ### `spec.parent` [optional]
 

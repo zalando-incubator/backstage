@@ -54,6 +54,8 @@ nav:
           - Concepts: 'features/techdocs/concepts.md'
           - TechDocs Architecture: 'features/techdocs/architecture.md'
           - Creating and Publishing Documentation: 'features/techdocs/creating-and-publishing.md'
+          - Configuration: 'features/techdocs/configuration.md'
+          - Using Cloud Storage: 'features/techdocs/using-cloud-storage.md'
           - Troubleshooting: 'features/techdocs/troubleshooting.md'
           - FAQ: 'features/techdocs/FAQ.md'
   - Plugins:
@@ -69,7 +71,7 @@ nav:
       - Testing:
           - Overview: 'plugins/testing.md'
       - Publishing:
-          - Open source and NPM: 'plugins/publishing.md'
+          - Open source and npm: 'plugins/publishing.md'
           - Private/internal (non-open source): 'plugins/publish-private.md'
   - Configuration:
       - Overview: 'conf/index.md'
