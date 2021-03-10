@@ -22,15 +22,13 @@ import {
   createMockEntity,
   mockDefaultLoadingState,
   MockComputeEngine,
-} from '../../utils/mockData';
-import {
   MockConfigProvider,
   MockCostInsightsApiProvider,
   MockCurrencyProvider,
   MockBillingDateProvider,
   MockScrollProvider,
   MockLoadingProvider,
-} from '../../utils/tests';
+} from '../../testUtils';
 import { Duration, Entity, Product } from '../../types';
 
 // suppress recharts componentDidUpdate warnings
@@ -77,17 +75,6 @@ const renderProductInsightsCardInTestApp = async (
   );
 
 describe('<ProductInsightsCard/>', () => {
-  it('Renders the scroll anchors', async () => {
-    const rendered = await renderProductInsightsCardInTestApp(
-      mockProductCost,
-      MockComputeEngine,
-      Duration.P30D,
-    );
-    expect(
-      rendered.queryByTestId(`scroll-test-compute-engine`),
-    ).toBeInTheDocument();
-  });
-
   it('Should render the right subheader for products with cost data', async () => {
     const entity = {
       ...mockProductCost,
@@ -109,7 +96,7 @@ describe('<ProductInsightsCard/>', () => {
       aggregation: [0, 0],
       change: { ratio: 0, amount: 0 },
     };
-    const subheader = `There are no ${MockComputeEngine.name} costs within this timeframe for your team's projects.`;
+    const subheader = `There are no ${MockComputeEngine.name} costs within this time frame for your team's projects.`;
     const rendered = await renderProductInsightsCardInTestApp(
       entity,
       MockComputeEngine,
@@ -117,6 +104,7 @@ describe('<ProductInsightsCard/>', () => {
     );
     const subheaderRgx = new RegExp(subheader);
     expect(rendered.getByText(subheaderRgx)).toBeInTheDocument();
+    expect(rendered.queryByText(/sorted by cost/)).not.toBeInTheDocument();
     expect(
       rendered.queryByTestId('.resource-growth-chart-legend'),
     ).not.toBeInTheDocument();

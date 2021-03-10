@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Logger } from 'winston';
-import Router from 'express-promise-router';
-import express from 'express';
-import Knex from 'knex';
-import fetch from 'cross-fetch';
-import { Config } from '@backstage/config';
-import Docker from 'dockerode';
-import {
-  GeneratorBuilder,
-  PreparerBuilder,
-  PublisherBase,
-  getLocationForEntity,
-} from '@backstage/techdocs-common';
 import { PluginEndpointDiscovery } from '@backstage/backend-common';
 import { Entity } from '@backstage/catalog-model';
-import { getEntityNameFromUrlPath } from './helpers';
+import { Config } from '@backstage/config';
+import {
+  GeneratorBuilder,
+  getLocationForEntity,
+  PreparerBuilder,
+  PublisherBase,
+} from '@backstage/techdocs-common';
+import fetch from 'cross-fetch';
+import Docker from 'dockerode';
+import express from 'express';
+import Router from 'express-promise-router';
+import { Knex } from 'knex';
+import { Logger } from 'winston';
 import { DocsBuilder } from '../DocsBuilder';
+import { getEntityNameFromUrlPath } from './helpers';
 
 type RouterOptions = {
   preparers: PreparerBuilder;
@@ -58,14 +58,22 @@ export async function createRouter({
     const { '0': path } = req.params;
     const entityName = getEntityNameFromUrlPath(path);
 
-    publisher
-      .fetchTechDocsMetadata(entityName)
-      .then(techdocsMetadataJson => {
-        res.send(techdocsMetadataJson);
-      })
-      .catch(reason => {
-        res.status(500).send(`Unable to get Metadata. Reason: ${reason}`);
-      });
+    try {
+      const techdocsMetadata = await publisher.fetchTechDocsMetadata(
+        entityName,
+      );
+
+      res.json(techdocsMetadata);
+    } catch (err) {
+      logger.error(
+        `Unable to get metadata for ${entityName.namespace}/${entityName.name} with error ${err}`,
+      );
+      res
+        .status(500)
+        .send(
+          `Unable to get metadata for $${entityName.namespace}/${entityName.name}, reason: ${err}`,
+        );
+    }
   });
 
   router.get('/metadata/entity/:namespace/:kind/:name', async (req, res) => {
@@ -74,14 +82,18 @@ export async function createRouter({
     const { kind, namespace, name } = req.params;
 
     try {
+      const token = getBearerToken(req.headers.authorization);
       const entity = (await (
         await fetch(
           `${catalogUrl}/entities/by-name/${kind}/${namespace}/${name}`,
+          {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          },
         )
       ).json()) as Entity;
 
       const locationMetadata = getLocationForEntity(entity);
-      res.send({ ...entity, locationMetadata });
+      res.json({ ...entity, locationMetadata });
     } catch (err) {
       logger.info(
         `Unable to get metadata for ${kind}/${namespace}/${name} with error ${err}`,
@@ -94,12 +106,17 @@ export async function createRouter({
 
   router.get('/docs/:namespace/:kind/:name/*', async (req, res) => {
     const { kind, namespace, name } = req.params;
-    const storageUrl = config.getString('techdocs.storageUrl');
+    const storageUrl =
+      config.getOptionalString('techdocs.storageUrl') ??
+      `${await discovery.getExternalBaseUrl('techdocs')}/static/docs`;
 
     const catalogUrl = await discovery.getBaseUrl('catalog');
     const triple = [kind, namespace, name].map(encodeURIComponent).join('/');
 
-    const catalogRes = await fetch(`${catalogUrl}/entities/by-name/${triple}`);
+    const token = getBearerToken(req.headers.authorization);
+    const catalogRes = await fetch(`${catalogUrl}/entities/by-name/${triple}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
     if (!catalogRes.ok) {
       const catalogResText = await catalogRes.text();
       res.status(catalogRes.status);
@@ -131,51 +148,57 @@ export async function createRouter({
         dockerClient,
         logger,
         entity,
-        config,
       });
-      if (publisherType === 'local') {
-        if (!(await docsBuilder.docsUpToDate())) {
+      switch (publisherType) {
+        case 'local':
           await docsBuilder.build();
-        }
-      } else if (publisherType === 'googleGcs') {
-        // This block should be valid for all external storage implementations. So no need to duplicate in future,
-        // add the publisher type in the list here.
-        if (!(await publisher.hasDocsBeenGenerated(entity))) {
-          logger.info(
-            'No pre-generated documentation files found for the entity in the storage. Building docs...',
-          );
-          await docsBuilder.build();
-          // With a maximum of ~5 seconds wait, check if the files got published and if docs will be fetched
-          // on the user's page. If not, respond with a message asking them to check back later.
-          // The delay here is to make sure GCS registers newly uploaded files which is usually <1 second
-          let foundDocs = false;
-          for (let attempt = 0; attempt < 5; attempt++) {
-            if (await publisher.hasDocsBeenGenerated(entity)) {
-              foundDocs = true;
-              break;
-            }
-            await new Promise(r => setTimeout(r, 1000));
-          }
-          if (!foundDocs) {
-            logger.error(
-              'Published files are taking longer to show up in storage. Something went wrong.',
+          break;
+        case 'awsS3':
+        case 'azureBlobStorage':
+        case 'openStackSwift':
+        case 'googleGcs':
+          // This block should be valid for all external storage implementations. So no need to duplicate in future,
+          // add the publisher type in the list here.
+          if (!(await publisher.hasDocsBeenGenerated(entity))) {
+            logger.info(
+              'No pre-generated documentation files found for the entity in the storage. Building docs...',
             );
-            res
-              .status(408)
-              .send(
-                'Sorry! It is taking longer for the generated docs to show up in storage. Check back later.',
+            await docsBuilder.build();
+            // With a maximum of ~5 seconds wait, check if the files got published and if docs will be fetched
+            // on the user's page. If not, respond with a message asking them to check back later.
+            // The delay here is to make sure GCS/AWS/etc. registers newly uploaded files which is usually <1 second
+            let foundDocs = false;
+            for (let attempt = 0; attempt < 5; attempt++) {
+              if (await publisher.hasDocsBeenGenerated(entity)) {
+                foundDocs = true;
+                break;
+              }
+              await new Promise(r => setTimeout(r, 1000));
+            }
+            if (!foundDocs) {
+              logger.error(
+                'Published files are taking longer to show up in storage. Something went wrong.',
               );
-            return;
+              res
+                .status(408)
+                .send(
+                  'Sorry! It is taking longer for the generated docs to show up in storage. Check back later.',
+                );
+              return;
+            }
+          } else {
+            logger.info(
+              'Found pre-generated docs for this entity. Serving them.',
+            );
+            // TODO: re-trigger build for cache invalidation.
+            // Add build info in techdocs_metadata.json and compare it against
+            // the etag/commit in the repository.
+            // Without this, docs will not be re-built once they have been generated.
+            // Although it is unconventional that anyone will face this issue - because
+            // if you have an external storage, you should be using CI/CD to build and publish docs.
           }
-        } else {
-          logger.info(
-            'Found pre-generated docs for this entity. Serving them.',
-          );
-          // TODO: re-trigger build for cache invalidation.
-          // Compare the date modified of the requested file on storage and compare it against
-          // the last modified or last commit timestamp in the repository.
-          // Without this, docs will not be re-built once they have been generated.
-        }
+          break;
+        default:
       }
     }
 
@@ -186,4 +209,8 @@ export async function createRouter({
   router.use('/static/docs', publisher.docsRouter());
 
   return router;
+}
+
+function getBearerToken(header?: string): string | undefined {
+  return header?.match(/(?:Bearer)\s+(\S+)/i)?.[1];
 }

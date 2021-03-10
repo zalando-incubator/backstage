@@ -14,30 +14,58 @@
  * limitations under the License.
  */
 
-import { ScmIntegration, ScmIntegrationFactory } from '../types';
+import { basicIntegrations, defaultScmResolveUrl } from '../helpers';
+import { ScmIntegration, ScmIntegrationsFactory } from '../types';
 import {
   GitHubIntegrationConfig,
   readGitHubIntegrationConfigs,
 } from './config';
 
 export class GitHubIntegration implements ScmIntegration {
-  static factory: ScmIntegrationFactory = ({ config }) => {
+  static factory: ScmIntegrationsFactory<GitHubIntegration> = ({ config }) => {
     const configs = readGitHubIntegrationConfigs(
       config.getOptionalConfigArray('integrations.github') ?? [],
     );
-    return configs.map(integration => ({
-      predicate: (url: URL) => url.host === integration.host,
-      integration: new GitHubIntegration(integration),
-    }));
+    return basicIntegrations(
+      configs.map(c => new GitHubIntegration(c)),
+      i => i.config.host,
+    );
   };
 
-  constructor(private readonly config: GitHubIntegrationConfig) {}
+  constructor(private readonly integrationConfig: GitHubIntegrationConfig) {}
 
   get type(): string {
     return 'github';
   }
 
   get title(): string {
-    return this.config.host;
+    return this.integrationConfig.host;
   }
+
+  get config(): GitHubIntegrationConfig {
+    return this.integrationConfig;
+  }
+
+  resolveUrl(options: { url: string; base: string }): string {
+    // GitHub uses blob URLs for files and tree urls for directory listings. But
+    // there is a redirect from tree to blob for files, so we can always return
+    // tree urls here.
+    return replaceUrlType(defaultScmResolveUrl(options), 'tree');
+  }
+
+  resolveEditUrl(url: string): string {
+    return replaceUrlType(url, 'edit');
+  }
+}
+
+export function replaceUrlType(
+  url: string,
+  type: 'blob' | 'tree' | 'edit',
+): string {
+  return url.replace(
+    /\/\/([^/]+)\/([^/]+)\/([^/]+)\/(blob|tree|edit)\//,
+    (_, host, owner, repo) => {
+      return `//${host}/${owner}/${repo}/${type}/`;
+    },
+  );
 }

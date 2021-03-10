@@ -14,58 +14,62 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react';
-import { Grid, Typography } from '@material-ui/core';
 import {
+  ConfigApi,
+  configApiRef,
+  Content,
+  ContentHeader,
+  Header,
   InfoCard,
   Page,
-  Content,
-  Header,
   SupportButton,
-  ContentHeader,
-  RouteRef,
+  useApi,
 } from '@backstage/core';
-import { RegisterComponentForm } from './ImportComponentForm';
-import ImportStepper from './ImportStepper';
-import ComponentConfigDisplay from './ComponentConfigDisplay';
-import { ImportFinished } from './ImportFinished';
-import { PartialEntity } from '../util/types';
+import { Grid, Typography } from '@material-ui/core';
+import React from 'react';
+import { ImportStepper } from './ImportStepper';
+import { StepperProviderOpts } from './ImportStepper/defaults';
 
-export type ConfigSpec = {
-  type: 'repo' | 'file';
-  location: string;
-  config: PartialEntity[];
-};
+function repositories(configApi: ConfigApi): string[] {
+  const integrations = configApi.getConfig('integrations');
+  const repos = [];
+  if (integrations.has('github')) {
+    repos.push('GitHub');
+  }
+  if (integrations.has('bitbucket')) {
+    repos.push('Bitbucket');
+  }
+  if (integrations.has('gitlab')) {
+    repos.push('GitLab');
+  }
+  if (integrations.has('azure')) {
+    repos.push('Azure');
+  }
+  return repos;
+}
 
-export const ImportComponentPage = ({
-  catalogRouteRef,
-}: {
-  catalogRouteRef: RouteRef;
-}) => {
-  const [activeStep, setActiveStep] = useState(0);
-  const [configFile, setConfigFile] = useState<ConfigSpec>({
-    type: 'repo',
-    location: '',
-    config: [],
-  });
-  const [endLink, setEndLink] = useState<string>('');
-  const nextStep = (options?: { reset: boolean }) => {
-    setActiveStep(step => (options?.reset ? 0 : step + 1));
-  };
+export const ImportComponentPage = (opts: StepperProviderOpts) => {
+  const configApi = useApi(configApiRef);
+  const appTitle = configApi.getOptional('app.title') || 'Backstage';
+
+  const repos = repositories(configApi);
+  const repositoryString = repos.join(', ').replace(/, (\w*)$/, ' or $1');
 
   return (
     <Page themeId="home">
       <Header title="Register an existing component" />
       <Content>
-        <ContentHeader title="Start tracking your component in Backstage">
+        <ContentHeader title={`Start tracking your component in ${appTitle}`}>
           <SupportButton>
-            Start tracking your component in Backstage by adding it to the
+            Start tracking your component in {appTitle} by adding it to the
             software catalog.
           </SupportButton>
         </ContentHeader>
-        <Grid container spacing={3} direction="row-reverse">
-          <Grid item xs={6}>
+
+        <Grid container spacing={2} direction="row-reverse">
+          <Grid item xs={12} md={4} lg={6} xl={8}>
             <InfoCard
+              title="Register an existing component"
               deepLink={{
                 title: 'Learn more about the Software Catalog',
                 link:
@@ -73,63 +77,54 @@ export const ImportComponentPage = ({
               }}
             >
               <Typography variant="body2" paragraph>
-                There are two ways to register an existing component.
-              </Typography>
-              <Typography variant="h6">GitHub Repo</Typography>
-              <Typography variant="body2" paragraph>
-                If you already have code in a GitHub repository, enter the full
-                URL to your repo and a new pull request with a sample Backstage
-                metadata Entity File (<code>catalog-info.yaml</code>) will be
-                opened for you.
+                Enter the URL to your SCM repository to add it to {appTitle}.
               </Typography>
               <Typography variant="h6">
-                GitHub Repo &amp; Entity File
+                Link to an existing entity file
+              </Typography>
+              <Typography variant="subtitle2" color="textSecondary" paragraph>
+                Example:{' '}
+                <code>
+                  https://github.com/backstage/backstage/blob/master/catalog-info.yaml
+                </code>
               </Typography>
               <Typography variant="body2" paragraph>
-                If you've already created a Backstage metadata file and put it
-                in your repo, you can enter the full URL to that Entity File.
+                The wizard analyzes the file, previews the entities, and adds
+                them to the {appTitle} catalog.
               </Typography>
+              {repos.length > 0 && (
+                <>
+                  <Typography variant="h6">
+                    Link to a {repositoryString} repository
+                  </Typography>
+                  <Typography
+                    variant="subtitle2"
+                    color="textSecondary"
+                    paragraph
+                  >
+                    Example: <code>https://github.com/backstage/backstage</code>
+                  </Typography>
+                  <Typography variant="body2" paragraph>
+                    The wizard discovers all <code>catalog-info.yaml</code>{' '}
+                    files in the repository, previews the entities, and adds
+                    them to the {appTitle} catalog.
+                  </Typography>
+                  {!opts?.pullRequest?.disable && (
+                    <Typography variant="body2" paragraph>
+                      If no entities are found, the wizard will prepare a Pull
+                      Request that adds an example{' '}
+                      <code>catalog-info.yaml</code> and prepares the {appTitle}{' '}
+                      catalog to load all entities as soon as the Pull Request
+                      is merged.
+                    </Typography>
+                  )}
+                </>
+              )}
             </InfoCard>
           </Grid>
-          <Grid item xs={6}>
-            <InfoCard>
-              <ImportStepper
-                steps={[
-                  {
-                    step: 'Insert GitHub repo URL or Entity File URL',
-                    content: (
-                      <RegisterComponentForm
-                        nextStep={nextStep}
-                        saveConfig={setConfigFile}
-                      />
-                    ),
-                  },
-                  {
-                    step: 'Review',
-                    content: (
-                      <ComponentConfigDisplay
-                        nextStep={nextStep}
-                        configFile={configFile}
-                        savePRLink={setEndLink}
-                        catalogRouteRef={catalogRouteRef}
-                      />
-                    ),
-                  },
-                  {
-                    step: 'Finish',
-                    content: (
-                      <ImportFinished
-                        nextStep={nextStep}
-                        PRLink={endLink}
-                        type={configFile.type}
-                      />
-                    ),
-                  },
-                ]}
-                activeStep={activeStep}
-                nextStep={nextStep}
-              />
-            </InfoCard>
+
+          <Grid item xs={12} md={8} lg={6} xl={4}>
+            <ImportStepper opts={opts} />
           </Grid>
         </Grid>
       </Content>

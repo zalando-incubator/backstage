@@ -21,6 +21,8 @@ const Background = props => {
             <Block.Paragraph>
               To explore the UI and basic features of Backstage firsthand, go
               to: <a href="https://demo.backstage.io">demo.backstage.io</a>.
+              (Tip: click “All” to view all the example components in the
+              service catalog.)
             </Block.Paragraph>
             <Block.Paragraph>
               Watch the videos below to get an introduction to Backstage and to
@@ -100,9 +102,9 @@ const Background = props => {
               width="560"
               height="315"
               src="https://www.youtube.com/embed/YLAd5hdXR_Q"
-              frameborder="0"
+              frameBorder="0"
               allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
+              allowFullScreen
             ></iframe>
           </Block.MediaFrame>
         </Block.Container>
@@ -135,9 +137,9 @@ const Background = props => {
               width="560"
               height="315"
               src="https://www.youtube.com/embed/mOLCgdPw1iA"
-              frameborder="0"
+              frameBorder="0"
               allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
+              allowFullScreen
             ></iframe>
           </Block.MediaFrame>
         </Block.Container>

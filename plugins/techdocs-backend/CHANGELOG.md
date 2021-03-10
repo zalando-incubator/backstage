@@ -1,5 +1,146 @@
 # @backstage/plugin-techdocs-backend
 
+## 0.6.3
+
+### Patch Changes
+
+- 52b5bc3e2: Forward authorization header on backend request if present
+- 15eee03bc: Use external url for static docs
+- f43192207: remove usage of res.send() for res.json() and res.end() to ensure content types are more consistently application/json on backend responses and error cases
+- Updated dependencies [12d8f27a6]
+- Updated dependencies [497859088]
+- Updated dependencies [f43192207]
+- Updated dependencies [8adb48df4]
+- Updated dependencies [61299519f]
+  - @backstage/catalog-model@0.7.3
+  - @backstage/backend-common@0.5.5
+  - @backstage/techdocs-common@0.4.3
+
+## 0.6.2
+
+### Patch Changes
+
+- f37992797: Got rid of some `attr` and cleaned up a bit in the TechDocs config schema.
+- Updated dependencies [bad21a085]
+- Updated dependencies [2499f6cde]
+- Updated dependencies [a1f5e6545]
+- Updated dependencies [1e4ddd71d]
+  - @backstage/catalog-model@0.7.2
+  - @backstage/techdocs-common@0.4.2
+  - @backstage/config@0.1.3
+
+## 0.6.1
+
+### Patch Changes
+
+- b0a41c707: Add etag of the prepared file tree to techdocs_metadata.json in the storage
+- Updated dependencies [16fb1d03a]
+- Updated dependencies [491f3a0ec]
+- Updated dependencies [434b4e81a]
+- Updated dependencies [fb28da212]
+- Updated dependencies [26e143e60]
+- Updated dependencies [c6655413d]
+- Updated dependencies [44414239f]
+- Updated dependencies [b0a41c707]
+  - @backstage/backend-common@0.5.4
+  - @backstage/techdocs-common@0.4.1
+
+## 0.6.0
+
+### Minor Changes
+
+- 08142b256: URL Preparer will now use proper etag based caching introduced in https://github.com/backstage/backstage/pull/4120. Previously, builds used to be cached for 30 minutes.
+
+### Patch Changes
+
+- 08142b256: TechDocs will throw warning in backend logs when legacy git preparer or dir preparer is used to preparer docs. Migrate to URL Preparer by updating `backstage.io/techdocs-ref` annotation to be prefixed with `url:`.
+  Detailed docs are here https://backstage.io/docs/features/techdocs/how-to-guides#how-to-use-url-reader-in-techdocs-prepare-step
+  See benefits and reason for doing so https://github.com/backstage/backstage/issues/4409
+- Updated dependencies [77ad0003a]
+- Updated dependencies [ffffea8e6]
+- Updated dependencies [82b2c11b6]
+- Updated dependencies [965e200c6]
+- Updated dependencies [5a5163519]
+- Updated dependencies [08142b256]
+- Updated dependencies [08142b256]
+  - @backstage/techdocs-common@0.4.0
+  - @backstage/backend-common@0.5.3
+
+## 0.5.5
+
+### Patch Changes
+
+- c777df180: 1. Added option to use Azure Blob Storage as a choice to store the static generated files for TechDocs.
+- e44925723: `techdocs.requestUrl` and `techdocs.storageUrl` are now optional configs and the discovery API will be used to get the URL where techdocs plugin is hosted.
+- Updated dependencies [c777df180]
+- Updated dependencies [2430ee7c2]
+- Updated dependencies [6e612ce25]
+- Updated dependencies [e44925723]
+- Updated dependencies [025e122c3]
+- Updated dependencies [7881f2117]
+- Updated dependencies [f0320190d]
+- Updated dependencies [11cb5ef94]
+  - @backstage/techdocs-common@0.3.7
+  - @backstage/backend-common@0.5.2
+  - @backstage/catalog-model@0.7.1
+
+## 0.5.4
+
+### Patch Changes
+
+- a5e27d5c1: Create type for TechDocsMetadata (#3716)
+
+  This change introduces a new type (TechDocsMetadata) in packages/techdocs-common. This type is then introduced in the endpoint response in techdocs-backend and in the api interface in techdocs (frontend).
+
+- Updated dependencies [def2307f3]
+- Updated dependencies [0b135e7e0]
+- Updated dependencies [294a70cab]
+- Updated dependencies [0ea032763]
+- Updated dependencies [5345a1f98]
+- Updated dependencies [53c9c51f2]
+- Updated dependencies [a5e27d5c1]
+- Updated dependencies [09a370426]
+- Updated dependencies [a93f42213]
+  - @backstage/catalog-model@0.7.0
+  - @backstage/backend-common@0.5.0
+  - @backstage/techdocs-common@0.3.5
+
+## 0.5.3
+
+### Patch Changes
+
+- 68ad5af51: Improve techdocs-common Generator API for it to be used by techdocs-cli. TechDocs generator.run function now takes
+  an input AND an output directory. Most probably you use techdocs-common via plugin-techdocs-backend, and so there
+  is no breaking change for you.
+  But if you use techdocs-common separately, you need to create an output directory and pass into the generator.
+- cb7af51e7: If using Url Reader, cache downloaded source files for 30 minutes.
+- Updated dependencies [68ad5af51]
+- Updated dependencies [f3b064e1c]
+- Updated dependencies [371f67ecd]
+- Updated dependencies [f1e74777a]
+- Updated dependencies [dbe4450c3]
+- Updated dependencies [5826d0973]
+- Updated dependencies [b3b9445df]
+- Updated dependencies [abbee6fff]
+- Updated dependencies [147fadcb9]
+  - @backstage/techdocs-common@0.3.3
+  - @backstage/catalog-model@0.6.1
+  - @backstage/backend-common@0.4.3
+
+## 0.5.2
+
+### Patch Changes
+
+- 7ec525481: 1. Added option to use AWS S3 as a choice to store the static generated files for TechDocs.
+- Updated dependencies [7ec525481]
+- Updated dependencies [5ecd50f8a]
+- Updated dependencies [f8ba88ded]
+- Updated dependencies [00042e73c]
+- Updated dependencies [0829ff126]
+- Updated dependencies [036a84373]
+  - @backstage/techdocs-common@0.3.2
+  - @backstage/backend-common@0.4.2
+
 ## 0.5.1
 
 ### Patch Changes

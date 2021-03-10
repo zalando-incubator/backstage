@@ -15,10 +15,14 @@
  */
 
 import { AwsOrganizationCloudAccountProcessor } from './AwsOrganizationCloudAccountProcessor';
+import * as winston from 'winston';
 
 describe('AwsOrganizationCloudAccountProcessor', () => {
   describe('readLocation', () => {
-    const processor = new AwsOrganizationCloudAccountProcessor();
+    const processor = new AwsOrganizationCloudAccountProcessor({
+      provider: {},
+      logger: winston.createLogger(),
+    });
     const location = { type: 'aws-cloud-accounts', target: '' };
     const emit = jest.fn();
     const listAccounts = jest.fn();
@@ -49,7 +53,7 @@ describe('AwsOrganizationCloudAccountProcessor', () => {
         location,
         entity: {
           apiVersion: 'backstage.io/v1alpha1',
-          kind: 'Component',
+          kind: 'Resource',
           metadata: {
             annotations: {
               'amazonaws.com/arn':
@@ -62,7 +66,6 @@ describe('AwsOrganizationCloudAccountProcessor', () => {
           },
           spec: {
             type: 'cloud-account',
-            lifecycle: 'unknown',
             owner: 'unknown',
           },
         },
@@ -70,7 +73,10 @@ describe('AwsOrganizationCloudAccountProcessor', () => {
     });
 
     it('filters out accounts not in specified location target', async () => {
-      const location = { type: 'aws-cloud-accounts', target: 'o-1vl18kc5a3' };
+      const locationTest = {
+        type: 'aws-cloud-accounts',
+        target: 'o-1vl18kc5a3',
+      };
       listAccounts.mockImplementation(() => {
         return {
           async promise() {
@@ -92,14 +98,14 @@ describe('AwsOrganizationCloudAccountProcessor', () => {
           },
         };
       });
-      await processor.readLocation(location, false, emit);
+      await processor.readLocation(locationTest, false, emit);
       expect(emit).toBeCalledTimes(1);
       expect(emit).toBeCalledWith({
         type: 'entity',
-        location,
+        location: locationTest,
         entity: {
           apiVersion: 'backstage.io/v1alpha1',
-          kind: 'Component',
+          kind: 'Resource',
           metadata: {
             annotations: {
               'amazonaws.com/arn':
@@ -112,7 +118,6 @@ describe('AwsOrganizationCloudAccountProcessor', () => {
           },
           spec: {
             type: 'cloud-account',
-            lifecycle: 'unknown',
             owner: 'unknown',
           },
         },

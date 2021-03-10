@@ -15,7 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { GitHubIntegration } from './GitHubIntegration';
+import { GitHubIntegration, replaceUrlType } from './GitHubIntegration';
 
 describe('GitHubIntegration', () => {
   it('has a working factory', () => {
@@ -33,13 +33,76 @@ describe('GitHubIntegration', () => {
         },
       }),
     });
-    expect(integrations.length).toBe(2); // including default
-    expect(integrations[0].predicate(new URL('https://h.com/a'))).toBe(true);
+    expect(integrations.list().length).toBe(2); // including default
+    expect(integrations.list()[0].config.host).toBe('h.com');
+    expect(integrations.list()[1].config.host).toBe('github.com');
   });
 
   it('returns the basics', () => {
-    const integration = new GitHubIntegration({ host: 'h.com' } as any);
+    const integration = new GitHubIntegration({
+      host: 'h.com',
+      apiBaseUrl: 'a',
+      rawBaseUrl: 'r',
+      token: 't',
+    });
     expect(integration.type).toBe('github');
     expect(integration.title).toBe('h.com');
+    expect(integration.config.host).toBe('h.com');
+  });
+
+  it('resolveUrl', () => {
+    const integration = new GitHubIntegration({ host: 'h.com' });
+
+    expect(
+      integration.resolveUrl({
+        url: '../a.yaml',
+        base:
+          'https://github.com/backstage/backstage/blob/master/test/README.md',
+      }),
+    ).toBe('https://github.com/backstage/backstage/tree/master/a.yaml');
+
+    expect(
+      integration.resolveUrl({
+        url: './',
+        base:
+          'https://github.com/backstage/backstage/blob/master/test/README.md',
+      }),
+    ).toBe('https://github.com/backstage/backstage/tree/master/test/');
+  });
+
+  it('resolve edit URL', () => {
+    const integration = new GitHubIntegration({ host: 'h.com' });
+
+    expect(
+      integration.resolveEditUrl(
+        'https://github.com/backstage/backstage/blob/master/README.md',
+      ),
+    ).toBe('https://github.com/backstage/backstage/edit/master/README.md');
+  });
+});
+
+describe('replaceUrlType', () => {
+  it('should replace with expected type', () => {
+    expect(
+      replaceUrlType(
+        'https://github.com/backstage/backstage/blob/master/README.md',
+        'edit',
+      ),
+    ).toBe('https://github.com/backstage/backstage/edit/master/README.md');
+    expect(
+      replaceUrlType(
+        'https://github.com/webmodules/blob/blob/master/test',
+        'tree',
+      ),
+    ).toBe('https://github.com/webmodules/blob/tree/master/test');
+    expect(
+      replaceUrlType('https://github.com/blob/blob/blob/master/test', 'tree'),
+    ).toBe('https://github.com/blob/blob/tree/master/test');
+    expect(
+      replaceUrlType(
+        'https://github.com/backstage/backstage/edit/tree/README.md',
+        'blob',
+      ),
+    ).toBe('https://github.com/backstage/backstage/blob/tree/README.md');
   });
 });

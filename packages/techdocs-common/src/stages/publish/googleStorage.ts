@@ -13,71 +13,72 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import path from 'path';
-import express from 'express';
-import {
-  Storage,
-  UploadResponse,
-  FileExistsResponse,
-} from '@google-cloud/storage';
-import { Logger } from 'winston';
 import { Entity, EntityName } from '@backstage/catalog-model';
 import { Config } from '@backstage/config';
-import { getHeadersForFileExtension, getFileTreeRecursively } from './helpers';
-import { PublisherBase, PublishRequest } from './types';
+import {
+  FileExistsResponse,
+  Storage,
+  UploadResponse,
+} from '@google-cloud/storage';
+import express from 'express';
+import JSON5 from 'json5';
+import createLimiter from 'p-limit';
+import path from 'path';
+import { Logger } from 'winston';
+import { getFileTreeRecursively, getHeadersForFileExtension } from './helpers';
+import { PublisherBase, PublishRequest, TechDocsMetadata } from './types';
 
 export class GoogleGCSPublish implements PublisherBase {
-  static fromConfig(config: Config, logger: Logger): PublisherBase {
-    let credentials = '';
-    let projectId = '';
+  static async fromConfig(
+    config: Config,
+    logger: Logger,
+  ): Promise<PublisherBase> {
     let bucketName = '';
     try {
-      credentials = config.getString(
-        'techdocs.publisher.googleGcs.credentials',
-      );
-      projectId = config.getString('techdocs.publisher.googleGcs.projectId');
       bucketName = config.getString('techdocs.publisher.googleGcs.bucketName');
     } catch (error) {
       throw new Error(
         "Since techdocs.publisher.type is set to 'googleGcs' in your app config, " +
-          'credentials, projectId and bucketName are required in techdocs.publisher.googleGcs ' +
-          'required to authenticate with Google Cloud Storage.',
+          'techdocs.publisher.googleGcs.bucketName is required.',
       );
     }
 
+    // Credentials is an optional config. If missing, default GCS environment variables will be used.
+    // Read more here https://cloud.google.com/docs/authentication/production
+    const credentials = config.getOptionalString(
+      'techdocs.publisher.googleGcs.credentials',
+    );
     let credentialsJson = {};
-    try {
-      credentialsJson = JSON.parse(credentials);
-    } catch (err) {
-      throw new Error(
-        'Error in parsing techdocs.publisher.googleGcs.credentials config to JSON.',
-      );
+    if (credentials) {
+      try {
+        credentialsJson = JSON.parse(credentials);
+      } catch (err) {
+        throw new Error(
+          'Error in parsing techdocs.publisher.googleGcs.credentials config to JSON.',
+        );
+      }
     }
 
     const storageClient = new Storage({
-      credentials: credentialsJson,
-      projectId: projectId,
+      ...(credentials && {
+        credentials: credentialsJson,
+      }),
     });
 
     // Check if the defined bucket exists. Being able to connect means the configuration is good
     // and the storage client will work.
-    storageClient
-      .bucket(bucketName)
-      .getMetadata()
-      .then(() => {
-        logger.info(
-          `Successfully connected to the GCS bucket ${bucketName} in the GCP project ${projectId}.`,
-        );
-      })
-      .catch(reason => {
-        logger.error(
-          `Could not retrieve metadata about the GCS bucket ${bucketName} in the GCP project ${projectId}. ` +
-            'Make sure the GCP project and the bucket exists and the access key located at the path ' +
-            "techdocs.publisher.googleGcs.credentials defined in app config has the role 'Storage Object Creator'. " +
-            'Refer to https://backstage.io/docs/features/techdocs/using-cloud-storage',
-        );
-        throw new Error(`from GCS client library: ${reason.message}`);
-      });
+    try {
+      await storageClient.bucket(bucketName).getMetadata();
+      logger.info(`Successfully connected to the GCS bucket ${bucketName}.`);
+    } catch (err) {
+      logger.error(
+        `Could not retrieve metadata about the GCS bucket ${bucketName}. ` +
+          'Make sure the bucket exists. Also make sure that authentication is setup either by explicitly defining ' +
+          'techdocs.publisher.googleGcs.credentials in app config or by using environment variables. ' +
+          'Refer to https://backstage.io/docs/features/techdocs/using-cloud-storage',
+      );
+      throw new Error(err.message);
+    }
 
     return new GoogleGCSPublish(storageClient, bucketName, logger);
   }
@@ -96,44 +97,53 @@ export class GoogleGCSPublish implements PublisherBase {
    * Upload all the files from the generated `directory` to the GCS bucket.
    * Directory structure used in the bucket is - entityNamespace/entityKind/entityName/index.html
    */
-  publish({ entity, directory }: PublishRequest): Promise<void> {
-    return new Promise(async (resolve, reject) => {
+  async publish({ entity, directory }: PublishRequest): Promise<void> {
+    try {
       // Note: GCS manages creation of parent directories if they do not exist.
       // So collecting path of only the files is good enough.
       const allFilesToUpload = await getFileTreeRecursively(directory);
 
+      const limiter = createLimiter(10);
       const uploadPromises: Array<Promise<UploadResponse>> = [];
-      allFilesToUpload.forEach(filePath => {
+      allFilesToUpload.forEach(sourceFilePath => {
         // Remove the absolute path prefix of the source directory
         // Path of all files to upload, relative to the root of the source directory
         // e.g. ['index.html', 'sub-page/index.html', 'assets/images/favicon.png']
-        const relativeFilePath = filePath.replace(`${directory}/`, '');
+        const relativeFilePath = path.relative(directory, sourceFilePath);
+
+        // Convert destination file path to a POSIX path for uploading.
+        // GCS expects / as path separator and relativeFilePath will contain \\ on Windows.
+        // https://cloud.google.com/storage/docs/gsutil/addlhelp/HowSubdirectoriesWork
+        const relativeFilePathPosix = relativeFilePath
+          .split(path.sep)
+          .join(path.posix.sep);
+
+        // The / delimiter is intentional since it represents the cloud storage and not the local file system.
         const entityRootDir = `${entity.metadata.namespace}/${entity.kind}/${entity.metadata.name}`;
-        const destination = `${entityRootDir}/${relativeFilePath}`; // GCS Bucket file relative path
-        // TODO: Upload in chunks of ~10 files instead of all files at once.
-        uploadPromises.push(
-          this.storageClient.bucket(this.bucketName).upload(filePath, {
+        const destination = `${entityRootDir}/${relativeFilePathPosix}`; // GCS Bucket file relative path
+
+        // Rate limit the concurrent execution of file uploads to batches of 10 (per publish)
+        const uploadFile = limiter(() =>
+          this.storageClient.bucket(this.bucketName).upload(sourceFilePath, {
             destination,
           }),
         );
+        uploadPromises.push(uploadFile);
       });
 
-      Promise.all(uploadPromises)
-        .then(() => {
-          this.logger.info(
-            `Successfully uploaded all the generated files for Entity ${entity.metadata.name}. Total number of files: ${allFilesToUpload.length}`,
-          );
-          resolve(undefined);
-        })
-        .catch((err: Error) => {
-          const errorMessage = `Unable to upload file(s) to Google Cloud Storage. Error ${err.message}`;
-          this.logger.error(errorMessage);
-          reject(errorMessage);
-        });
-    });
+      await Promise.all(uploadPromises);
+
+      this.logger.info(
+        `Successfully uploaded all the generated files for Entity ${entity.metadata.name}. Total number of files: ${allFilesToUpload.length}`,
+      );
+    } catch (e) {
+      const errorMessage = `Unable to upload file(s) to Google Cloud Storage. ${e}`;
+      this.logger.error(errorMessage);
+      throw new Error(errorMessage);
+    }
   }
 
-  fetchTechDocsMetadata(entityName: EntityName): Promise<string> {
+  fetchTechDocsMetadata(entityName: EntityName): Promise<TechDocsMetadata> {
     return new Promise((resolve, reject) => {
       const entityRootDir = `${entityName.namespace}/${entityName.kind}/${entityName.name}`;
 
@@ -150,10 +160,10 @@ export class GoogleGCSPublish implements PublisherBase {
           fileStreamChunks.push(chunk);
         })
         .on('end', () => {
-          const techdocsMetadataJson = Buffer.concat(
-            fileStreamChunks,
-          ).toString();
-          resolve(techdocsMetadataJson);
+          const techdocsMetadataJson = Buffer.concat(fileStreamChunks).toString(
+            'utf-8',
+          );
+          resolve(JSON5.parse(techdocsMetadataJson));
         });
     });
   }
@@ -171,29 +181,24 @@ export class GoogleGCSPublish implements PublisherBase {
       const fileExtension = path.extname(filePath);
       const responseHeaders = getHeadersForFileExtension(fileExtension);
 
-      const fileStreamChunks: Array<any> = [];
+      // Pipe file chunks directly from storage to client.
       this.storageClient
         .bucket(this.bucketName)
         .file(filePath)
         .createReadStream()
+        .on('pipe', () => {
+          res.writeHead(200, responseHeaders);
+        })
         .on('error', err => {
           this.logger.warn(err.message);
-          res.status(404).send(err.message);
-        })
-        .on('data', chunk => {
-          fileStreamChunks.push(chunk);
-        })
-        .on('end', () => {
-          const fileContent = Buffer.concat(fileStreamChunks).toString();
-          // Inject response headers
-          for (const [headerKey, headerValue] of Object.entries(
-            responseHeaders,
-          )) {
-            res.setHeader(headerKey, headerValue);
+          // Send a 404 with a meaningful message if possible.
+          if (!res.headersSent) {
+            res.status(404).send(err.message);
+          } else {
+            res.destroy();
           }
-
-          res.send(fileContent);
-        });
+        })
+        .pipe(res);
     };
   }
 
